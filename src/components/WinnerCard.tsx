@@ -107,7 +107,7 @@ export function WinnerCard({ winner, isRevealing }: WinnerCardProps) {
           transition={{ delay: 0.9 }}
           className={`mt-4 text-sm ${style.textColor} opacity-70`}
         >
-          Won with {winner.participant.totalTickets} tickets
+          {winner.participant.totalTickets} {winner.participant.totalTickets === 1 ? 'entry' : 'entries'}
         </motion.p>
       </div>
     </motion.div>

@@ -64,7 +64,7 @@ export function DrawingWheel({
           opacity: isDrawing ? [0.5, 0.8, 0.5] : 0.3
         }}
         transition={{ duration: 0.5, repeat: isDrawing ? Infinity : 0 }}
-        className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 rounded-3xl blur-xl"
+        className="absolute inset-0 bg-gradient-to-r from-[#007bc7] via-sky-400 to-[#007bc7] rounded-3xl blur-xl"
       />
 
       <div className="relative bg-slate-900/90 backdrop-blur-lg rounded-3xl p-8 border border-slate-700">
@@ -75,7 +75,7 @@ export function DrawingWheel({
           className="text-center mb-6"
         >
           <span className="text-lg text-slate-400">Drawing for</span>
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-[#007bc7]">
             {placeLabel}
           </h2>
         </motion.div>
@@ -118,7 +118,7 @@ export function DrawingWheel({
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             className="absolute top-4 right-4"
           >
-            <svg className="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-sky-400" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path
                 className="opacity-75"

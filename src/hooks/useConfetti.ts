@@ -15,7 +15,7 @@ export function useConfetti() {
       particleCount,
       spread,
       origin: { x: 0.1, y: 0.6 },
-      colors: ['#fbbf24', '#f59e0b', '#d97706', '#92400e'],
+      colors: ['#007bc7', '#38bdf8', '#ffffff', '#fbbf24'],
     });
 
     // Fire from right
@@ -23,7 +23,7 @@ export function useConfetti() {
       particleCount,
       spread,
       origin: { x: 0.9, y: 0.6 },
-      colors: ['#fbbf24', '#f59e0b', '#d97706', '#92400e'],
+      colors: ['#007bc7', '#38bdf8', '#ffffff', '#fbbf24'],
     });
   };
 
@@ -31,7 +31,7 @@ export function useConfetti() {
     const duration = 3000;
     const end = Date.now() + duration;
 
-    const colors = ['#fbbf24', '#f59e0b', '#d97706', '#a855f7', '#ec4899'];
+    const colors = ['#007bc7', '#38bdf8', '#0ea5e9', '#ffffff', '#fbbf24'];
 
     (function frame() {
       confetti({
@@ -62,7 +62,7 @@ export function useConfetti() {
       gravity: 0,
       decay: 0.94,
       startVelocity: 30,
-      colors: ['#fbbf24', '#f59e0b', '#ffffff'],
+      colors: ['#007bc7', '#38bdf8', '#ffffff'],
     };
 
     confetti({

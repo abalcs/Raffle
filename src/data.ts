@@ -1,17 +1,30 @@
 import type { Participant } from './types';
 
-// PLACEHOLDER DATA - Replace with actual employee data
+// Employee Incentive Raffle - Bingo Ticket Data
 export const participants: Participant[] = [
-  { id: 1, name: "John Smith", totalTickets: 15 },
-  { id: 2, name: "Sarah Johnson", totalTickets: 23 },
-  { id: 3, name: "Michael Chen", totalTickets: 8 },
-  { id: 4, name: "Emily Davis", totalTickets: 31 },
-  { id: 5, name: "David Wilson", totalTickets: 12 },
-  { id: 6, name: "Jessica Brown", totalTickets: 19 },
-  { id: 7, name: "Robert Taylor", totalTickets: 27 },
-  { id: 8, name: "Amanda Martinez", totalTickets: 14 },
-  { id: 9, name: "Christopher Lee", totalTickets: 22 },
-  { id: 10, name: "Ashley Garcia", totalTickets: 9 },
+  // Alan's Team
+  { id: 1, name: "Adrianna", totalTickets: 11 },
+  { id: 2, name: "Rachael", totalTickets: 9 },
+  { id: 3, name: "Paige", totalTickets: 19 },
+  { id: 4, name: "Jack", totalTickets: 11 },
+  { id: 5, name: "Peadar", totalTickets: 9 },
+  { id: 6, name: "Mandy", totalTickets: 9 },
+  { id: 7, name: "Emma", totalTickets: 9 },
+  // Katie's Team
+  { id: 8, name: "Katie", totalTickets: 10 },
+  { id: 9, name: "Lexi", totalTickets: 3 },
+  { id: 10, name: "Deanna", totalTickets: 3 },
+  { id: 11, name: "Andrea", totalTickets: 3 },
+  { id: 12, name: "Shannon", totalTickets: 3 },
+  { id: 13, name: "Megan", totalTickets: 3 },
+  { id: 14, name: "Lexie", totalTickets: 3 },
+  // Bridget's Team
+  { id: 15, name: "Sarah", totalTickets: 6 },
+  { id: 16, name: "Alex", totalTickets: 6 },
+  { id: 17, name: "Bit", totalTickets: 6 },
+  { id: 18, name: "Delaney", totalTickets: 6 },
+  { id: 19, name: "Grace", totalTickets: 6 },
+  { id: 20, name: "Rachel", totalTickets: 7 },
 ];
 
 export const prizes = {
