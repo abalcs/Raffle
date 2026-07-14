@@ -6,7 +6,7 @@ export interface Participant {
 
 export interface Winner {
   participant: Participant;
-  place: 1 | 2 | 3;
+  place: number;
   prize: string;
   prizeAmount: number;
 }

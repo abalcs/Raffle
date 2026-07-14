@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Participant } from '../types';
 
 interface Prize {
-  place: 1 | 2 | 3;
+  place: number;
   label: string;
   amount: number;
   description: string;
@@ -132,22 +132,54 @@ export function SetupScreen({
     }
   };
 
-  const updatePrize = (place: 1 | 2 | 3, field: 'amount' | 'description', value: string) => {
-    const amount = field === 'amount' ? parseInt(value) || 0 : undefined;
+  function getOrdinal(n: number): string {
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  const updatePrize = (place: number, field: 'amount' | 'description' | 'label', value: string) => {
     onUpdatePrizes(
       prizes.map(p =>
         p.place === place
           ? {
               ...p,
-              ...(field === 'amount' ? { amount: amount!, description: `$${amount} ${p.description.split(' ').slice(1).join(' ')}` } : { description: value }),
+              ...(field === 'amount'
+                ? { amount: parseInt(value) || 0 }
+                : field === 'label'
+                ? { label: value }
+                : { description: value }),
             }
           : p
       )
     );
   };
 
+  const addPrize = () => {
+    const nextPlace = prizes.length + 1;
+    const label = `${getOrdinal(nextPlace)} Place`;
+    onUpdatePrizes([
+      ...prizes,
+      { place: nextPlace, label, amount: 0, description: 'Prize' },
+    ]);
+  };
+
+  const removePrize = (place: number) => {
+    if (prizes.length <= 1) return;
+    const filtered = prizes.filter(p => p.place !== place);
+    // Re-number places sequentially
+    const renumbered = filtered
+      .sort((a, b) => a.place - b.place)
+      .map((p, i) => ({
+        ...p,
+        place: i + 1,
+        label: `${getOrdinal(i + 1)} Place`,
+      }));
+    onUpdatePrizes(renumbered);
+  };
+
   const totalTickets = participants.reduce((sum, p) => sum + p.totalTickets, 0);
-  const canStart = participants.length >= 3;
+  const canStart = participants.length >= prizes.length && prizes.length >= 1;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#313131] via-slate-800 to-[#313131] py-8 px-4">
@@ -279,10 +311,10 @@ export function SetupScreen({
                     className="overflow-hidden"
                   >
                     <div className="space-y-4 mt-4">
-                      {prizes.sort((a, b) => a.place - b.place).map((prize) => (
+                      {[...prizes].sort((a, b) => a.place - b.place).map((prize) => (
                         <div key={prize.place} className="flex items-center gap-3">
                           <span className="text-2xl">
-                            {prize.place === 1 ? '🥇' : prize.place === 2 ? '🥈' : '🥉'}
+                            {prize.place === 1 ? '🥇' : prize.place === 2 ? '🥈' : prize.place === 3 ? '🥉' : '🏅'}
                           </span>
                           <div className="flex-1">
                             <label className="block text-xs text-slate-400">{prize.label}</label>
@@ -305,8 +337,23 @@ export function SetupScreen({
                               />
                             </div>
                           </div>
+                          {prizes.length > 1 && (
+                            <button
+                              onClick={() => removePrize(prize.place)}
+                              className="p-2 text-slate-400 hover:text-red-400 transition-colors"
+                              title="Remove prize"
+                            >
+                              🗑️
+                            </button>
+                          )}
                         </div>
                       ))}
+                      <button
+                        onClick={addPrize}
+                        className="w-full py-2 rounded-lg font-medium text-sm bg-slate-700 hover:bg-slate-600 text-white transition-colors border border-dashed border-slate-500"
+                      >
+                        + Add Prize
+                      </button>
                     </div>
                   </motion.div>
                 )}
@@ -431,7 +478,7 @@ export function SetupScreen({
                   : 'bg-slate-700 text-slate-400 cursor-not-allowed'
               }`}
             >
-              {canStart ? '🎰 Start Raffle' : `Need at least 3 participants (${participants.length}/3)`}
+              {canStart ? '🎰 Start Raffle' : `Need at least ${prizes.length} participants (${participants.length}/${prizes.length})`}
             </motion.button>
 
             {/* Reset button */}

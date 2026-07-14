@@ -6,7 +6,15 @@ interface WinnerRevealProps {
   isNew: boolean;
 }
 
-const placeConfig = {
+const placeConfigs: Record<number, {
+  gradient: string;
+  bgGradient: string;
+  textColor: string;
+  glowColor: string;
+  emoji: string;
+  label: string;
+  subtitle: string;
+}> = {
   1: {
     gradient: 'from-yellow-400 via-amber-500 to-yellow-600',
     bgGradient: 'from-yellow-500/20 via-amber-500/10 to-transparent',
@@ -36,8 +44,32 @@ const placeConfig = {
   },
 };
 
+const defaultConfig = {
+  gradient: 'from-sky-500 via-blue-600 to-sky-700',
+  bgGradient: 'from-sky-500/20 via-blue-500/10 to-transparent',
+  textColor: 'text-sky-100',
+  glowColor: 'shadow-sky-500/50',
+  emoji: '🏅',
+};
+
+function getOrdinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function getPlaceConfig(place: number) {
+  if (placeConfigs[place]) return placeConfigs[place];
+  const ordinal = getOrdinal(place).toUpperCase();
+  return {
+    ...defaultConfig,
+    label: `${ordinal} PLACE`,
+    subtitle: 'WINNER',
+  };
+}
+
 export function WinnerReveal({ winner, isNew }: WinnerRevealProps) {
-  const config = placeConfig[winner.place];
+  const config = getPlaceConfig(winner.place);
 
   return (
     <motion.div

@@ -9,10 +9,16 @@ import { useConfetti } from './hooks/useConfetti';
 import { useSoundEffects } from './hooks/useSoundEffects';
 
 interface Prize {
-  place: 1 | 2 | 3;
+  place: number;
   label: string;
   amount: number;
   description: string;
+}
+
+function getOrdinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 const defaultPrizes: Prize[] = [
@@ -35,7 +41,7 @@ function App() {
   const [prizes, setPrizes] = useState<Prize[]>(defaultPrizes);
   const [remainingParticipants, setRemainingParticipants] = useState<Participant[]>([]);
   const [winners, setWinners] = useState<Winner[]>([]);
-  const [currentDrawing, setCurrentDrawing] = useState<{ place: 1 | 2 | 3; label: string } | null>(null);
+  const [currentDrawing, setCurrentDrawing] = useState<{ place: number; label: string } | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentWinner, setCurrentWinner] = useState<Participant | null>(null);
   const [highlightedId, setHighlightedId] = useState<number | null>(null);
@@ -126,8 +132,8 @@ function App() {
     return eligible[eligible.length - 1];
   }, []);
 
-  const getPrize = (place: 1 | 2 | 3) => {
-    return prizes.find(p => p.place === place) || defaultPrizes.find(p => p.place === place)!;
+  const getPrize = (place: number) => {
+    return prizes.find(p => p.place === place) || { place, label: `${getOrdinal(place)} Place`, amount: 0, description: 'Prize' };
   };
 
   const startRaffleMode = () => {
@@ -158,7 +164,10 @@ function App() {
     setNewWinnerId(null);
   };
 
-  const drawNextWinner = async (place: 1 | 2 | 3) => {
+  const sortedPrizes = [...prizes].sort((a, b) => a.place - b.place);
+  const isLastPrize = (place: number) => place === sortedPrizes[0]?.place;
+
+  const drawNextWinner = async (place: number) => {
     const prizeInfo = getPrize(place);
     setCurrentDrawing({ place, label: prizeInfo.label });
     setCurrentWinner(null);
@@ -187,17 +196,18 @@ function App() {
     setHighlightedId(winner.id);
 
     // Sound and confetti based on place
+    const isFinalPrize = isLastPrize(place);
     if (soundEnabled) {
-      playWinnerReveal(place === 1);
+      playWinnerReveal(isFinalPrize);
     }
 
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    if (place === 1) {
+    if (isFinalPrize) {
       fireGrandFinale();
       fireStars();
       if (soundEnabled) playCelebration();
-    } else if (place === 2) {
+    } else if (place <= 2) {
       fireConfetti('large');
     } else {
       fireConfetti('medium');
@@ -216,10 +226,11 @@ function App() {
     setRemainingParticipants(prev => prev.filter(p => p.id !== winner.id));
     setHighlightedId(null);
     setNewWinnerId(winner.id);
-    setState('winner-reveal');
 
-    if (place === 1) {
+    if (isFinalPrize) {
       setState('complete');
+    } else {
+      setState('winner-reveal');
     }
   };
 
@@ -351,23 +362,29 @@ function App() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className={`grid grid-cols-3 gap-4 mb-8 mx-auto ${isPresentationMode ? 'max-w-3xl' : 'max-w-2xl'}`}
+          className={`grid gap-4 mb-8 mx-auto ${isPresentationMode ? 'max-w-3xl' : 'max-w-2xl'}`}
+          style={{ gridTemplateColumns: `repeat(${Math.min(prizes.length, 4)}, minmax(0, 1fr))` }}
         >
-          {([3, 2, 1] as const).map((place) => {
-            const prize = getPrize(place);
-            const isWon = winners.some(w => w.place === place);
+          {[...sortedPrizes].reverse().map((prize) => {
+            const isWon = winners.some(w => w.place === prize.place);
+            const placeEmoji = prize.place === 1 ? '🥇' : prize.place === 2 ? '🥈' : prize.place === 3 ? '🥉' : '🏅';
+            const placeBg = prize.place === 1
+              ? 'bg-yellow-500/20 border-2 border-yellow-400/50'
+              : prize.place === 2
+              ? 'bg-slate-400/20 border-2 border-slate-400/50'
+              : prize.place === 3
+              ? 'bg-amber-700/20 border-2 border-amber-600/50'
+              : 'bg-sky-700/20 border-2 border-sky-500/50';
             return (
               <motion.div
-                key={place}
+                key={prize.place}
                 animate={{
                   scale: isWon ? 0.95 : 1,
                   opacity: isWon ? 0.5 : 1,
                 }}
                 className={`
                   text-center p-4 rounded-xl backdrop-blur-sm relative overflow-hidden
-                  ${place === 1 ? 'bg-yellow-500/20 border-2 border-yellow-400/50' : ''}
-                  ${place === 2 ? 'bg-slate-400/20 border-2 border-slate-400/50' : ''}
-                  ${place === 3 ? 'bg-amber-700/20 border-2 border-amber-600/50' : ''}
+                  ${placeBg}
                   ${isWon ? 'grayscale' : ''}
                 `}
               >
@@ -377,7 +394,7 @@ function App() {
                   </div>
                 )}
                 <div className={`${isPresentationMode ? 'text-4xl' : 'text-2xl'} mb-1`}>
-                  {place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉'}
+                  {placeEmoji}
                 </div>
                 <div className={`text-white font-bold ${isPresentationMode ? 'text-lg' : ''}`}>{prize.label}</div>
                 <div className={`font-bold text-green-400 ${isPresentationMode ? 'text-2xl' : 'text-xl'}`}>${prize.amount}</div>
@@ -448,44 +465,41 @@ function App() {
                 </motion.button>
               )}
 
-              {state === 'showing-participants' && (
-                <motion.button
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => drawNextWinner(3)}
-                  className={`w-full rounded-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg shadow-amber-500/30 transition-all duration-300 ${isPresentationMode ? 'py-6 px-8 text-2xl' : 'py-4 px-6 text-lg'}`}
-                >
-                  🥉 Draw {getPrize(3).label} - ${getPrize(3).amount}
-                </motion.button>
-              )}
+              {(() => {
+                // Determine which prize to draw next (draw from last place to first)
+                const drawOrder = [...sortedPrizes].reverse();
+                const nextPrize = drawOrder[winners.length];
+                if (!nextPrize) return null;
 
-              {state === 'winner-reveal' && winners.length === 1 && (
-                <motion.button
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => drawNextWinner(2)}
-                  className={`w-full rounded-xl font-bold bg-gradient-to-r from-slate-500 to-gray-600 hover:from-slate-400 hover:to-gray-500 text-white shadow-lg shadow-slate-500/30 transition-all duration-300 ${isPresentationMode ? 'py-6 px-8 text-2xl' : 'py-4 px-6 text-lg'}`}
-                >
-                  🥈 Draw {getPrize(2).label} - ${getPrize(2).amount}
-                </motion.button>
-              )}
+                const shouldShow =
+                  (state === 'showing-participants' && winners.length === 0) ||
+                  (state === 'winner-reveal' && winners.length > 0 && winners.length < prizes.length);
 
-              {state === 'winner-reveal' && winners.length === 2 && (
-                <motion.button
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => drawNextWinner(1)}
-                  className={`w-full rounded-xl font-bold bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-black shadow-lg shadow-yellow-500/30 transition-all duration-300 ${isPresentationMode ? 'py-6 px-8 text-2xl' : 'py-4 px-6 text-lg'}`}
-                >
-                  🥇 Draw {getPrize(1).label} - ${getPrize(1).amount}
-                </motion.button>
-              )}
+                if (!shouldShow) return null;
+
+                const placeEmoji = nextPrize.place === 1 ? '🥇' : nextPrize.place === 2 ? '🥈' : nextPrize.place === 3 ? '🥉' : '🏅';
+                const isGrand = isLastPrize(nextPrize.place);
+                const buttonGradient = isGrand
+                  ? 'from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400'
+                  : nextPrize.place === 2
+                  ? 'from-slate-500 to-gray-600 hover:from-slate-400 hover:to-gray-500'
+                  : 'from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500';
+                const textColor = isGrand ? 'text-black' : 'text-white';
+                const shadowColor = isGrand ? 'shadow-yellow-500/30' : nextPrize.place === 2 ? 'shadow-slate-500/30' : 'shadow-amber-500/30';
+
+                return (
+                  <motion.button
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => drawNextWinner(nextPrize.place)}
+                    className={`w-full rounded-xl font-bold bg-gradient-to-r ${buttonGradient} ${textColor} shadow-lg ${shadowColor} transition-all duration-300 ${isPresentationMode ? 'py-6 px-8 text-2xl' : 'py-4 px-6 text-lg'}`}
+                  >
+                    {placeEmoji} Draw {nextPrize.label} - ${nextPrize.amount}
+                  </motion.button>
+                );
+              })()}
 
               {state === 'complete' && (
                 <motion.button
@@ -591,7 +605,7 @@ function App() {
                     >
                       <div className="flex items-center gap-4">
                         <span className="text-4xl">
-                          {winner.place === 1 ? '🥇' : winner.place === 2 ? '🥈' : '🥉'}
+                          {winner.place === 1 ? '🥇' : winner.place === 2 ? '🥈' : winner.place === 3 ? '🥉' : '🏅'}
                         </span>
                         <div>
                           <div className="text-white font-bold text-2xl">

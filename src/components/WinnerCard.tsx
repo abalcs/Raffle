@@ -6,7 +6,13 @@ interface WinnerCardProps {
   isRevealing: boolean;
 }
 
-const placeStyles = {
+const placeStyles: Record<number, {
+  gradient: string;
+  textColor: string;
+  ringColor: string;
+  label: string;
+  emoji: string;
+}> = {
   1: {
     gradient: 'from-yellow-400 via-amber-500 to-yellow-600',
     textColor: 'text-yellow-900',
@@ -30,8 +36,16 @@ const placeStyles = {
   },
 };
 
+const defaultStyle = {
+  gradient: 'from-sky-500 via-blue-600 to-sky-700',
+  textColor: 'text-sky-100',
+  ringColor: 'ring-sky-500',
+  label: '',
+  emoji: '🏅',
+};
+
 export function WinnerCard({ winner, isRevealing }: WinnerCardProps) {
-  const style = placeStyles[winner.place];
+  const style = placeStyles[winner.place] || { ...defaultStyle, label: `${winner.place}th` };
 
   return (
     <motion.div
